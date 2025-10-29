@@ -1,16 +1,31 @@
-# React + Vite
+g# My-App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**My-App** is a responsive web application built with **React** and **Firebase**, integrating the **TMDb API** to fetch the latest movie recommendations. Users can register, log in, and log out securely using Firebase Authentication. The app also allows users to explore movie trailers directly on YouTube, making it a seamless entertainment experience.
 
-Currently, two official plugins are available:
+## Features
+- **User Authentication:** Register, log in, and sign out securely using Firebase.
+- **Movie Recommendations:** Fetches latest movies from TMDb API and displays ratings.
+- **Video Player:** Watch trailers via embedded YouTube videos.
+- **Responsive UI:** Works seamlessly on desktop and mobile devices.
+- **Interactive Components:** Modular components for navigation, title cards, footer, and hero section.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+- **Frontend:** React.js, CSS
+- **Backend/Services:** Firebase Authentication
+- **APIs:** TMDb API for movie data, YouTube for trailers
+- **Build Tools:** VS Code, npm
 
-## React Compiler
+## Project Structure
 
-The React Compiler is not enabled on this template. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+my-app/
+├─ public/
+│ └─ index.html
+├─ src/
+│ ├─ assets/ # Images, icons, videos
+│ ├─ components/ # Navbar, Footer, TitleCard, Player
+│ ├─ pages/ # Home, Login, Player
+│ ├─ App.jsx
+│ └─ index.js
+├─ package.json
+└─ README.md
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
