@@ -1,0 +1,96 @@
+.home {
+    font-family: 'Poppins', sans-serif;
+    background-color: #111;
+    color: #fff;
+}
+
+/* Hero Section */
+.hero {
+    position: relative;
+    background-image: url('../../assets/icons/BackgroundImage.png');
+    background-size: cover;
+    background-position: center;
+    height: 500px; /* smaller height so navbar works */
+    display: flex;
+    align-items: flex-end;
+}
+
+.hero-overlay {
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 20%, transparent 100%);
+    width: 100%;
+    padding: 40px 5%;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+    max-width: 600px;
+    line-height: 1.5;
+}
+
+.hero-btns {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.hero-btns .btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    background-color: #fff;
+    color: #000;
+    transition: opacity 0.3s ease;
+}
+
+.hero-btns .btn img {
+    width: 20px; /* icon size */
+    height: 20px;
+}
+
+.hero-btns .btn:hover {
+    opacity: 0.8;
+}
+
+.hero-btns .dark-btn {
+    background-color: #333;
+    color: #fff;
+}
+
+.hero-btns .dark-btn:hover {
+    opacity: 0.8;
+}
+
+/* More Cards Section */
+.more-cards {
+    padding: 40px 5%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+
+    .hero-btns {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
