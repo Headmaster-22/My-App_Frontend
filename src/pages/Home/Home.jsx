@@ -36,7 +36,7 @@ const Home = () => {
         <div className='hero-overlay'>
           <h1>Welcome to MY APP</h1>
           <p className='hero-description'>
-            This is a simple React application that demonstrates the use of components, routing, and styling.
+            This is a simple React application that demonstrates the use of components, routing, and styling with API and Firebase Usage.
             <br />
             Explore the features and enjoy your stay!
           </p>
