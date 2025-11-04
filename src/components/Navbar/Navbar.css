@@ -95,6 +95,6 @@
     color: #fff;
 }
 
-.navbar-profile:hover .dropdown {
+.navbar-profile .dropdown {
     display: block;
 }
