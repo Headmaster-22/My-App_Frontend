@@ -8,10 +8,11 @@ import infoIcon from '../../assets/icons/InfoIcon.png';
 import TitleCard from '../../components/TitleCards/TitleCard';
 
 const heroTitles = [
-  { title: "Grammar" },
-  { title: "Semantics" },
+  { title: "New Videos" },
+  { title: "Top Ten" },
+  { title: "For You" },
+  { title: "Popular" },
   { title: "Upcoming..." },
-  { title: "Topics for You" }
 ];
 
 const HeroButtons = () => (
