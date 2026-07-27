@@ -1,10 +1,21 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { signOut } from "firebase/auth";
-import {addDoc, getFirestore} from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword,
-    signInWithEmailAndPassword} from "firebase/auth";
-import { collection } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  onSnapshot,
+} from "firebase/firestore";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { toast } from "react-toastify";
 
 const firebaseConfig = {
@@ -22,33 +33,132 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Friendly formatter for firebase auth error codes
+const formatAuthError = (err) => {
+  try {
+    return err.code.split("/")[1].split("-").join(" ");
+  } catch {
+    return "Something went wrong. Please try again.";
+  }
+};
+
 const signUp = async (name, email, password) => {
-    try{
-        const res = await createUserWithEmailAndPassword(auth, email, password);
-        const user = res.user;
-    await addDoc(collection(db, "users"), {
-            uid: user.uid,
-            name,
-            authProvider: "local",
-            email
-        });
-    } catch (err) {
-        console.error(err);
-        toast.error(err.code.split("/")[2].split("-").join(" "));
-    }
+  try {
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    const user = res.user;
+    // Keyed by uid (not a random doc id) so we can update it later, e.g. My List
+    await setDoc(doc(db, "users", user.uid), {
+      uid: user.uid,
+      name,
+      authProvider: "local",
+      email,
+      myList: [],
+    });
+    toast.success(`Welcome, ${name}!`);
+  } catch (err) {
+    console.error(err);
+    toast.error(formatAuthError(err));
+    throw err;
+  }
 };
 
 const logIn = async (email, password) => {
-    try{
-        await signInWithEmailAndPassword(auth, email, password);
-    } catch (err) {
-        console.error(err);
-        toast.error(err.code.split("/")[2].split("-").join(" "));
-    }
-}
-
-const logOut = () => {
-    signOut(auth);
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    toast.success("Signed in successfully");
+  } catch (err) {
+    console.error(err);
+    toast.error(formatAuthError(err));
+    throw err;
+  }
 };
 
-export { auth, db, signUp, logIn, logOut };
+const logOut = () => {
+  signOut(auth);
+  toast.info("Signed out");
+};
+
+// ---- My List (Firestore) ----
+
+const getMyList = async (uid) => {
+  if (!uid) return [];
+  const snap = await getDoc(doc(db, "users", uid));
+  return snap.exists() ? snap.data().myList || [] : [];
+};
+
+const addToMyList = async (uid, movie) => {
+  if (!uid) return;
+  const userRef = doc(db, "users", uid);
+  await updateDoc(userRef, { myList: arrayUnion(movie) });
+  toast.success(`Added "${movie.original_title || movie.title}" to My List`);
+};
+
+const removeFromMyList = async (uid, movie) => {
+  if (!uid) return;
+  const userRef = doc(db, "users", uid);
+  await updateDoc(userRef, { myList: arrayRemove(movie) });
+  toast.info(`Removed "${movie.original_title || movie.title}" from My List`);
+};
+
+// Real-time version of getMyList - fires callback(list) immediately, then again
+// on every change to this user's list, from any component/tab. Call the
+// returned function to unsubscribe (e.g. in a useEffect cleanup).
+const subscribeToMyList = (uid, callback) => {
+  if (!uid) return () => {};
+  const userRef = doc(db, "users", uid);
+  return onSnapshot(userRef, (snap) => {
+    callback(snap.exists() ? snap.data().myList || [] : []);
+  });
+};
+
+// ---- Watch history (powers the "Recommended For You" row) ----
+
+// Call whenever a user opens a movie in the Player. Keeps only the most
+// recent movie for simplicity - swap to an array + arrayUnion if you want
+// full history later.
+const recordWatched = async (uid, movie) => {
+  if (!uid || !movie) return;
+  const userRef = doc(db, "users", uid);
+  await updateDoc(userRef, {
+    lastWatched: { id: movie.id, title: movie.title || movie.original_title },
+  });
+};
+
+const getLastWatched = async (uid) => {
+  if (!uid) return null;
+  const snap = await getDoc(doc(db, "users", uid));
+  return snap.exists() ? snap.data().lastWatched || null : null;
+};
+
+// ---- Star ratings (1-5, per user per movie) ----
+// Stored as a map on the user doc: { ratings: { [movieId]: 4 } }
+// Simple and avoids a second collection; fine at this app's scale.
+
+const submitRating = async (uid, movieId, rating) => {
+  if (!uid) return;
+  const userRef = doc(db, "users", uid);
+  await updateDoc(userRef, { [`ratings.${movieId}`]: rating });
+  toast.success(`You rated this ${rating} star${rating > 1 ? "s" : ""}`);
+};
+
+const getUserRating = async (uid, movieId) => {
+  if (!uid) return 0;
+  const snap = await getDoc(doc(db, "users", uid));
+  return snap.exists() ? (snap.data().ratings?.[movieId] || 0) : 0;
+};
+
+export {
+  auth,
+  db,
+  signUp,
+  logIn,
+  logOut,
+  getMyList,
+  addToMyList,
+  removeFromMyList,
+  subscribeToMyList,
+  recordWatched,
+  getLastWatched,
+  submitRating,
+  getUserRating,
+};

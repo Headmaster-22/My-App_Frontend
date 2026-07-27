@@ -1,0 +1,41 @@
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 22px;
+  margin-top: 6px;
+}
+
+.star-rating-label {
+  font-size: 14px;
+  color: var(--text-dim, #b3b3b3);
+  margin-right: 8px;
+}
+
+.star {
+  cursor: pointer;
+  color: #444;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.star:hover {
+  transform: scale(1.15);
+}
+
+.star.filled {
+  color: #f5c518;
+}
+
+.star-rating-loading {
+  height: 24px;
+  width: 160px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

@@ -35,7 +35,7 @@ const Footer = () => {
       </ul>
 
       <p className='copyright-text'>
-        &copy; 2025 My App <br />
+        &copy; {new Date().getFullYear()} My App <br />
         Powered by Headmaster Ltd.
       </p>
     </footer>

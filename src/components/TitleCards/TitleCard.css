@@ -4,57 +4,186 @@
 }
 
 .titlecards h2 {
-    margin-bottom: 10px;
-    font-size: 1.5rem;
+    margin-bottom: 12px;
+    font-size: 1.4rem;
     font-weight: 600;
     padding-left: 4%;
+    letter-spacing: 0.3px;
 }
+
+.titlecards-empty {
+    padding-left: 4%;
+    color: var(--text-dim, #b3b3b3);
+    font-size: 0.95rem;
+}
+
+.card-list-wrapper {
+    position: relative;
+}
+
+.card-list-wrapper:hover .scroll-btn {
+    opacity: 1;
+}
+
+.scroll-btn {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    background: rgba(0,0,0,0.55);
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.scroll-btn:hover { background: rgba(0,0,0,0.8); }
+.scroll-btn.left { left: 0; }
+.scroll-btn.right { right: 0; }
 
 .card-list {
     display: flex;
     overflow-x: auto;
-    gap: 15px;
-    padding-left: 4%;
+    gap: 12px;
+    padding: 6px 4% 20px;
     scroll-behavior: smooth;
     cursor: grab;
 }
 
-.card-list:active {
-    cursor: grabbing;
-}
-
-.card-list::-webkit-scrollbar {
-    display: none;
-}
-
+.card-list:active { cursor: grabbing; }
+.card-list::-webkit-scrollbar { display: none; }
 
 .card {
-    flex: 0 0 auto; 
-    width: 160px;
+    flex: 0 0 auto;
+    width: 220px;
+    aspect-ratio: 16 / 9;
     border-radius: 8px;
     overflow: hidden;
     position: relative;
     text-decoration: none;
     color: white;
-    transition: transform 0.2s ease;
+    background: #1a1a1a;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease;
 }
 
 .card:hover {
-    transform: scale(1.05);
+    transform: scale(1.1);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.7);
+    z-index: 2;
 }
 
 .card img {
     width: 100%;
+    height: 100%;
     display: block;
-    border-radius: 8px;
+    object-fit: cover;
+}
+
+.card-noimg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim, #b3b3b3);
+    font-size: 0.8rem;
+    background: #222;
+}
+
+.card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 55%);
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.card:hover::after { opacity: 0.92; }
+
+.card-rating {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.7);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #f5c518;
+    z-index: 1;
+}
+
+.card-list-btn {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.5);
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.card-list-btn:hover {
+    background: var(--accent, #e50914);
+    border-color: var(--accent, #e50914);
+    transform: scale(1.1);
+}
+
+.card-list-btn.active {
+    background: var(--accent, #e50914);
+    border-color: var(--accent, #e50914);
 }
 
 .card-info {
     position: absolute;
-    bottom: 5px;
-    left: 5px;
-    right: 5px;
+    bottom: 8px;
+    left: 10px;
+    right: 10px;
     font-size: 0.8rem;
-    color: white;
-    text-shadow: 0px 0px 5px black;
+    z-index: 1;
+}
+
+.card-lang {
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    color: var(--accent, #e50914);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.card-title {
+    font-weight: 500;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Skeleton loading state */
+.card-skeleton {
+    background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@media (max-width: 768px) {
+    .card { width: 160px; }
+    .scroll-btn { display: none; }
 }

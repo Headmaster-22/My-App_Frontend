@@ -7,90 +7,115 @@
 /* Hero Section */
 .hero {
     position: relative;
-    background-image: url('../../assets/icons/BackgroundImage.png');
+    background-color: #1a1a1a;
     background-size: cover;
-    background-position: center;
-    height: 500px; /* smaller height so navbar works */
+    background-position: center top;
+    height: 600px;
     display: flex;
     align-items: flex-end;
+    transition: background-image 0.6s ease;
 }
 
 .hero-overlay {
-    background: linear-gradient(to top, rgba(0,0,0,0.85) 20%, transparent 100%);
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.35) 60%, transparent 100%);
     width: 100%;
-    padding: 40px 5%;
+    padding: 60px 5%;
+    animation: fadeInUp 0.9s var(--ease) both;
 }
 
 .hero h1 {
-    font-size: 2.5rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.2rem;
+    letter-spacing: 1px;
     margin-bottom: 15px;
+    max-width: 700px;
+    background: linear-gradient(to right, #fff, #ccc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .hero-description {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     margin-bottom: 25px;
     max-width: 600px;
-    line-height: 1.5;
+    line-height: 1.6;
+    color: #d1d1d1;
 }
 
 .hero-btns {
     display: flex;
     gap: 15px;
-    margin-bottom: 25px;
+    margin-bottom: 10px;
 }
 
 .hero-btns .btn {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 20px;
+    padding: 12px 26px;
     font-weight: 600;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     border: none;
     background-color: #fff;
     color: #000;
-    transition: opacity 0.3s ease;
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), opacity 0.2s ease;
 }
 
 .hero-btns .btn img {
-    width: 20px; /* icon size */
+    width: 20px;
     height: 20px;
 }
 
 .hero-btns .btn:hover {
-    opacity: 0.8;
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(255,255,255,0.15);
+}
+
+.hero-btns .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .hero-btns .dark-btn {
-    background-color: #333;
+    background-color: rgba(51,51,51,0.85);
     color: #fff;
+    backdrop-filter: blur(4px);
 }
 
 .hero-btns .dark-btn:hover {
-    opacity: 0.8;
+    box-shadow: 0 8px 20px var(--accent-glow);
 }
 
 /* More Cards Section */
 .more-cards {
-    padding: 40px 5%;
+    padding: 40px 0 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 10px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+    .hero { height: 480px; }
+
     .hero h1 {
         font-size: 2rem;
     }
 
     .hero-description {
-        font-size: 1rem;
+        font-size: 0.95rem;
     }
 
     .hero-btns {
         flex-direction: column;
         gap: 10px;
+    }
+
+    .hero-btns .btn {
+        width: 100%;
+        justify-content: center;
     }
 }

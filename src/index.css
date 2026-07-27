@@ -1,22 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Bebas+Neue&display=swap');
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --accent: #e50914;
+  --accent-hover: #f6121d;
+  --accent-glow: rgba(229, 9, 20, 0.4);
+  --bg-primary: #121212;
+  --bg-card: #181818;
+  --text-dim: #b3b3b3;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
-    background-color: #121212; /* darker for movie app */
-    color: white;
-    font-family: 'Poppins', sans-serif;
-    overflow-x: hidden; /* prevent horizontal overflow globally */
+  background-color: var(--bg-primary);
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
 }
 
 #root {
-    width: 100%;
-    min-height: 100vh;
+  width: 100%;
+  min-height: 100vh;
 }
 
-/* Optional: ensure sections like home or titlecards stretch full width */
 section, .home, .titlecards {
-    width: 100%;
+  width: 100%;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+::-webkit-scrollbar-track { background: #1a1a1a; }
+
+/* Full-screen loading state shown while checking auth in App.jsx */
+.app-loading {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--text-dim);
+  background: var(--bg-primary);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

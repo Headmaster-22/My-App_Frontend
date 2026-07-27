@@ -1,43 +1,70 @@
-import React, {useEffect} from 'react'
-import Home from "./pages/Home/Home.jsx"
-import {Routes, Route} from 'react-router-dom'
-import Login from "./pages/login/login.jsx"
-import Player from './pages/Player/Player.jsx'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from './firebase.js'
-import { useNavigate } from 'react-router-dom'
-import { ToastContainer } from 'react-toastify'
+import React from 'react';
+import Home from "./pages/Home/Home.jsx";
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from "./pages/login/login.jsx";
+import Player from './pages/Player/Player.jsx';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// import { ToastContainer } from 'react-toastify';
-// import 'react-toastify/dist/ReactToastify.css';
+import { AuthProvider } from './context/AuthProvider.jsx';
+import { useAuth } from './context/AuthContext.js';
 
+// Guards a route: bounces to /login if there's no signed-in user.
+const PrivateRoute = ({ children }) => {
+  const { user, loadingAuth } = useAuth();
+  if (loadingAuth) return <div className="app-loading">Loading...</div>;
+  return user ? children : <Navigate to="/login" replace />;
+};
 
+// Keeps a signed-in user off the login screen.
+const PublicOnlyRoute = ({ children }) => {
+  const { user, loadingAuth } = useAuth();
+  if (loadingAuth) return <div className="app-loading">Loading...</div>;
+  return user ? <Navigate to="/" replace /> : children;
+};
+
+const AppRoutes = () => (
+  <Routes>
+    <Route
+      path='/'
+      element={
+        <PrivateRoute>
+          <Home />
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path='/login'
+      element={
+        <PublicOnlyRoute>
+          <Login />
+        </PublicOnlyRoute>
+      }
+    />
+    <Route
+      path='/player/:id'
+      element={
+        <PrivateRoute>
+          <Player />
+        </PrivateRoute>
+      }
+    />
+  </Routes>
+);
 
 const App = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    onAuthStateChanged(auth, async(user) => {
-      if (user) {
-        console.log("Useer logged In");
-        navigate("/");
-      } else {
-        console.log("No User Registered");
-        navigate("/login");
-      } 
-    })
-  }, []);
-
-
   return (
-    <div>
-      <Routes>
-        <Route path='/' element = {<Home/>}/>
-        <Route path='/login' element = {<Login/>}/>
-        <Route path='/player/:id' element = {<Player/>}/>
-      </Routes>
-    </div>
-  )
-}
+    <AuthProvider>
+      <div>
+        <AppRoutes />
+        <ToastContainer
+          position="bottom-right"
+          theme="dark"
+          autoClose={3000}
+          pauseOnHover
+        />
+      </div>
+    </AuthProvider>
+  );
+};
 
-export default App
+export default App;

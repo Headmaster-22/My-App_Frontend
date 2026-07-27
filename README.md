@@ -1,4 +1,4 @@
-g# My-App
+# My-App
 
 **My-App** is a responsive web application built with **React** and **Firebase**, integrating the **TMDb API** to fetch the latest movie recommendations. Users can register, log in, and log out securely using Firebase Authentication. The app also allows users to explore movie trailers directly on YouTube, making it a seamless entertainment experience.
 
