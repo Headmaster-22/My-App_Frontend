@@ -41,7 +41,7 @@ const AppRoutes = () => (
       }
     />
     <Route
-      path='/player/:id'
+      path='/player/:mediaType/:id'
       element={
         <PrivateRoute>
           <Player />

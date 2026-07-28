@@ -6,7 +6,8 @@ import whiteNotificationBell from "../../assets/icons/whitenotificationbell.png"
 import profileImage from "../../assets/icons/profileImage.jpg";
 import whiteCaretDown from "../../assets/icons/whitecaretdown.png";
 import { logOut } from '../../firebase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { getMediaTitle, getMediaYear, isPlayableMedia } from '../../utils/media.js';
 
 const TMDB_OPTIONS = {
   method: "GET",
@@ -16,12 +17,20 @@ const TMDB_OPTIONS = {
   }
 };
 
-const navLinks = ["Home", "TV Shows", "Movies", "New & Popular", "My List"];
+// Each link either scrolls to a section id on Home, or (hash: null) scrolls to top
+const NAV_LINKS = [
+  { label: "Home", hash: null },
+  { label: "Trending", hash: "trending" },
+  { label: "TV Shows", hash: "tv-shows" },
+  { label: "Top Rated", hash: "top-rated" },
+  { label: "My List", hash: "my-list" },
+];
 
 const Navbar = () => {
   const navRef = useRef();
   const searchRef = useRef();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -50,11 +59,13 @@ const Navbar = () => {
     setSearching(true);
     const timeout = setTimeout(() => {
       fetch(
-        `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1`,
+        `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1`,
         TMDB_OPTIONS
       )
         .then((res) => res.json())
-        .then((data) => setResults((data.results || []).slice(0, 6)))
+        .then((data) =>
+          setResults((data.results || []).filter(isPlayableMedia).slice(0, 6))
+        )
         .catch((err) => console.error(err))
         .finally(() => setSearching(false));
     }, 400);
@@ -73,11 +84,29 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const goToMovie = (id) => {
+  const handleNavClick = (link) => {
+    setMobileOpen(false);
+
+    if (location.pathname !== "/") {
+      // Not on Home (e.g. on the Player page) - navigate there with the hash,
+      // Home's own effect picks up the hash and scrolls once it lands.
+      navigate(link.hash ? `/#${link.hash}` : "/");
+      return;
+    }
+
+    if (!link.hash) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    document.getElementById(link.hash)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const goToResult = (item) => {
     setSearchOpen(false);
     setQuery("");
     setResults([]);
-    navigate(`/player/${id}`);
+    navigate(`/player/${item.media_type}/${item.id}`);
   };
 
   return (
@@ -86,8 +115,8 @@ const Navbar = () => {
         <img src={icon} alt="Logo" className="logo" />
 
         <ul className={mobileOpen ? "nav-links open" : "nav-links"}>
-          {navLinks.map((link, index) => (
-            <li key={index} onClick={() => setMobileOpen(false)}>{link}</li>
+          {NAV_LINKS.map((link) => (
+            <li key={link.label} onClick={() => handleNavClick(link)}>{link.label}</li>
           ))}
         </ul>
 
@@ -124,25 +153,26 @@ const Navbar = () => {
               {!searching && results.length === 0 && (
                 <p className='search-status'>No matches found.</p>
               )}
-              {!searching && results.map((movie) => (
+              {!searching && results.map((item) => (
                 <div
-                  key={movie.id}
+                  key={`${item.media_type}-${item.id}`}
                   className='search-result'
-                  onClick={() => goToMovie(movie.id)}
+                  onClick={() => goToResult(item)}
                 >
-                  {movie.poster_path ? (
+                  {item.poster_path ? (
                     <img
-                      src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
-                      alt={movie.title}
+                      src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
+                      alt={getMediaTitle(item)}
                     />
                   ) : (
                     <div className='search-result-noimg' />
                   )}
                   <div>
-                    <p className='search-result-title'>{movie.title || movie.original_title}</p>
-                    <p className='search-result-year'>
-                      {movie.release_date ? movie.release_date.slice(0, 4) : "—"}
+                    <p className='search-result-title'>
+                      {getMediaTitle(item)}
+                      {item.media_type === "tv" && <span className='search-result-badge'>TV</span>}
                     </p>
+                    <p className='search-result-year'>{getMediaYear(item)}</p>
                   </div>
                 </div>
               ))}

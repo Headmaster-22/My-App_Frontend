@@ -3,7 +3,7 @@ import "./StarRating.css";
 import { useAuth } from '../../context/AuthContext.js';
 import { submitRating, getUserRating } from '../../firebase.js';
 
-const StarRating = ({ movieId }) => {
+const StarRating = ({ movieId, mediaType = "movie" }) => {
   const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
@@ -15,19 +15,19 @@ const StarRating = ({ movieId }) => {
       return;
     }
     setLoading(true);
-    getUserRating(user.uid, movieId)
+    getUserRating(user.uid, mediaType, movieId)
       .then(setRating)
       .finally(() => setLoading(false));
-  }, [user, movieId]);
+  }, [user, movieId, mediaType]);
 
   if (!user) return null; // only signed-in users can rate
   if (loading) return <div className="star-rating star-rating-loading" />;
 
   const handleRate = (value) => {
     setRating(value); // optimistic update
-    submitRating(user.uid, movieId, value).catch(() => {
+    submitRating(user.uid, mediaType, movieId, value).catch(() => {
       // revert on failure
-      getUserRating(user.uid, movieId).then(setRating);
+      getUserRating(user.uid, mediaType, movieId).then(setRating);
     });
   };
 

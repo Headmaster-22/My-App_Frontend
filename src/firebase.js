@@ -17,6 +17,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { toast } from "react-toastify";
+import { mediaKey, getMediaTitle } from "./utils/media.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD0_RcWIolmsXcWccVvLsKYYqEwO4g7KM8",
@@ -90,14 +91,14 @@ const addToMyList = async (uid, movie) => {
   if (!uid) return;
   const userRef = doc(db, "users", uid);
   await updateDoc(userRef, { myList: arrayUnion(movie) });
-  toast.success(`Added "${movie.original_title || movie.title}" to My List`);
+  toast.success(`Added "${getMediaTitle(movie)}" to My List`);
 };
 
 const removeFromMyList = async (uid, movie) => {
   if (!uid) return;
   const userRef = doc(db, "users", uid);
   await updateDoc(userRef, { myList: arrayRemove(movie) });
-  toast.info(`Removed "${movie.original_title || movie.title}" from My List`);
+  toast.info(`Removed "${getMediaTitle(movie)}" from My List`);
 };
 
 // Real-time version of getMyList - fires callback(list) immediately, then again
@@ -113,14 +114,14 @@ const subscribeToMyList = (uid, callback) => {
 
 // ---- Watch history (powers the "Recommended For You" row) ----
 
-// Call whenever a user opens a movie in the Player. Keeps only the most
-// recent movie for simplicity - swap to an array + arrayUnion if you want
+// Call whenever a user opens a title in the Player. Keeps only the most
+// recent title for simplicity - swap to an array + arrayUnion if you want
 // full history later.
-const recordWatched = async (uid, movie) => {
-  if (!uid || !movie) return;
+const recordWatched = async (uid, item, mediaType) => {
+  if (!uid || !item) return;
   const userRef = doc(db, "users", uid);
   await updateDoc(userRef, {
-    lastWatched: { id: movie.id, title: movie.title || movie.original_title },
+    lastWatched: { id: item.id, mediaType, title: getMediaTitle(item) },
   });
 };
 
@@ -130,21 +131,22 @@ const getLastWatched = async (uid) => {
   return snap.exists() ? snap.data().lastWatched || null : null;
 };
 
-// ---- Star ratings (1-5, per user per movie) ----
-// Stored as a map on the user doc: { ratings: { [movieId]: 4 } }
-// Simple and avoids a second collection; fine at this app's scale.
+// ---- Star ratings (1-5, per user per title) ----
+// Stored as a map on the user doc: { ratings: { "movie_123": 4, "tv_123": 5 } }
+// Keyed by mediaType+id since a movie and a TV show can share the same
+// numeric TMDb id. Simple map avoids a second collection; fine at this scale.
 
-const submitRating = async (uid, movieId, rating) => {
+const submitRating = async (uid, mediaType, id, rating) => {
   if (!uid) return;
   const userRef = doc(db, "users", uid);
-  await updateDoc(userRef, { [`ratings.${movieId}`]: rating });
+  await updateDoc(userRef, { [`ratings.${mediaKey(mediaType, id)}`]: rating });
   toast.success(`You rated this ${rating} star${rating > 1 ? "s" : ""}`);
 };
 
-const getUserRating = async (uid, movieId) => {
+const getUserRating = async (uid, mediaType, id) => {
   if (!uid) return 0;
   const snap = await getDoc(doc(db, "users", uid));
-  return snap.exists() ? (snap.data().ratings?.[movieId] || 0) : 0;
+  return snap.exists() ? (snap.data().ratings?.[mediaKey(mediaType, id)] || 0) : 0;
 };
 
 export {

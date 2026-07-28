@@ -152,6 +152,18 @@
     font-weight: 500;
 }
 
+.search-result-badge {
+    display: inline-block;
+    margin-left: 6px;
+    background: var(--accent, #e50914);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    vertical-align: middle;
+}
+
 .search-result-year {
     font-size: 11px;
     color: var(--text-dim, #b3b3b3);

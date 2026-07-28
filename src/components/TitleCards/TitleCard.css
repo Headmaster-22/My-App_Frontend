@@ -117,6 +117,24 @@
     z-index: 1;
 }
 
+.card-type-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--accent, #e50914);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    z-index: 1;
+}
+
+/* If both rating and TV badge are present, stack the badge below the rating */
+.card-rating ~ .card-type-badge {
+    top: 30px;
+}
+
 .card-list-btn {
     position: absolute;
     top: 8px;

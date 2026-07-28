@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import "./Home.css";
-import Navbar from '../../components/Navbar/Navbar';
-import Footer from '../../components/Footer/Footer';
+import Navbar from '../../components/Navbar/Navbar.jsx';
+import Footer from '../../components/Footer/Footer.jsx';
 import playIcon from '../../assets/icons/playIcon.png';
 import infoIcon from '../../assets/icons/InfoIcon.png';
-import TitleCard from '../../components/TitleCards/TitleCard';
-import { useNavigate } from 'react-router-dom';
+import TitleCard from '../../components/TitleCards/TitleCard.jsx';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.js';
 import { subscribeToMyList, getLastWatched } from '../../firebase.js';
+import { TV_GENRES, MOVIE_GENRES, getMediaTitle } from '../../utils/media.js';
 
 const TMDB_OPTIONS = {
   method: "GET",
@@ -17,21 +18,16 @@ const TMDB_OPTIONS = {
   }
 };
 
-// TMDb genre ids for our extra rows
-const GENRES = [
-  { title: "Action", id: 28 },
-  { title: "Comedy", id: 35 },
-  { title: "Horror", id: 27 },
-];
-
 const Home = () => {
   const [hero, setHero] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [myList, setMyList] = useState([]);
   const [myListLoading, setMyListLoading] = useState(true);
   // null = "not loaded yet or nothing watched" - TitleCard skips the fetch until this resolves
   const [lastWatchedId, setLastWatchedId] = useState(null);
+  const [lastWatchedType, setLastWatchedType] = useState("movie");
 
   // Pull a featured movie for the hero banner instead of a static image
   useEffect(() => {
@@ -68,8 +64,23 @@ const Home = () => {
       setLastWatchedId(null);
       return;
     }
-    getLastWatched(user.uid).then((last) => setLastWatchedId(last?.id ?? null));
+    getLastWatched(user.uid).then((last) => {
+      setLastWatchedId(last?.id ?? null);
+      setLastWatchedType(last?.mediaType || "movie");
+    });
   }, [user]);
+
+  // Nav links navigate to /#some-id — this scrolls to it once we land here.
+  // Small delay lets the row wrappers (which exist immediately, even while
+  // their data is still loading) mount before we try to find them.
+  useEffect(() => {
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    const timeout = setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [location.hash]);
 
   return (
     <div className='home'>
@@ -83,7 +94,7 @@ const Home = () => {
         } : undefined}
       >
         <div className='hero-overlay'>
-          <h1>{hero ? (hero.title || hero.original_title) : "Welcome to MY APP"}</h1>
+          <h1>{hero ? getMediaTitle(hero) : "Welcome to MY APP"}</h1>
           <p className='hero-description'>
             {hero
               ? (hero.overview?.length > 220 ? hero.overview.slice(0, 220) + "…" : hero.overview)
@@ -93,14 +104,14 @@ const Home = () => {
           <div className='hero-btns'>
             <button
               className='btn'
-              onClick={() => hero && navigate(`/player/${hero.id}`)}
+              onClick={() => hero && navigate(`/player/movie/${hero.id}`)}
               disabled={!hero}
             >
               <img src={playIcon} alt="Play" /> Play Trailer
             </button>
             <button
               className='btn dark-btn'
-              onClick={() => hero && navigate(`/player/${hero.id}`)}
+              onClick={() => hero && navigate(`/player/movie/${hero.id}`)}
               disabled={!hero}
             >
               <img src={infoIcon} alt="Info" /> More Info
@@ -111,23 +122,42 @@ const Home = () => {
 
       {/* Rows */}
       <div className="more-cards">
-        <TitleCard title="Trending Now" category="popular" />
+        <div id="trending">
+          <TitleCard title="Trending Now" category="popular" />
+        </div>
 
         {user && !myListLoading && (
-          <TitleCard title="My List" staticItems={myList} myListMode />
+          <div id="my-list">
+            <TitleCard title="My List" staticItems={myList} myListMode />
+          </div>
         )}
 
         {user && lastWatchedId && (
-          <TitleCard title="Recommended For You" recommendationsFor={lastWatchedId} />
+          <TitleCard
+            title="Recommended For You"
+            recommendationsFor={lastWatchedId}
+            mediaType={lastWatchedType}
+          />
         )}
 
-        <TitleCard title="Top Rated" category="top_rated" />
+        <div id="top-rated">
+          <TitleCard title="Top Rated" category="top_rated" />
+        </div>
         <TitleCard title="Now Playing" category="now_playing" />
         <TitleCard title="Coming Soon" category="upcoming" />
 
-        {GENRES.map((g) => (
-          <TitleCard key={g.id} title={g.title} genreId={g.id} />
+        {MOVIE_GENRES.map((g) => (
+          <TitleCard key={`movie-${g.id}`} title={g.title} genreId={g.id} />
         ))}
+
+        <div id="tv-shows">
+          <TitleCard title="Popular TV Shows" category="popular" mediaType="tv" />
+          <TitleCard title="Top Rated TV Shows" category="top_rated" mediaType="tv" />
+          <TitleCard title="Airing Today" category="airing_today" mediaType="tv" />
+          {TV_GENRES.map((g) => (
+            <TitleCard key={`tv-${g.id}`} title={g.title} genreId={g.id} mediaType="tv" />
+          ))}
+        </div>
       </div>
 
       <Footer />

@@ -3,6 +3,7 @@ import "./TitleCard.css";
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.js';
 import { addToMyList, removeFromMyList } from '../../firebase.js';
+import { getMediaTitle } from '../../utils/media.js';
 
 const TMDB_OPTIONS = {
   method: "GET",
@@ -12,9 +13,10 @@ const TMDB_OPTIONS = {
   }
 };
 
-// category -> TMDb "list" endpoints (popular, top_rated, now_playing, upcoming)
-// genreId -> TMDb "discover" endpoint, for genre-based rows
-const TitleCard = ({ title, category, genreId, recommendationsFor, staticItems, myListMode = false }) => {
+// mediaType: 'movie' (default) or 'tv' - changes which TMDb endpoints we hit
+// category -> TMDb "list" endpoints (popular, top_rated, now_playing/airing_today, upcoming/on_the_air)
+// genreId -> TMDb "discover" endpoint, for genre-based rows (movie and TV genre ids differ!)
+const TitleCard = ({ title, category, genreId, recommendationsFor, mediaType = "movie", staticItems, myListMode = false }) => {
   const [apiData, setApiData] = useState(staticItems || null);
   const [loading, setLoading] = useState(!staticItems);
   const cardsRef = useRef(null);
@@ -48,20 +50,23 @@ const TitleCard = ({ title, category, genreId, recommendationsFor, staticItems, 
 
     setLoading(true);
     const url = recommendationsFor
-      ? `https://api.themoviedb.org/3/movie/${recommendationsFor}/recommendations?language=en-US`
+      ? `https://api.themoviedb.org/3/${mediaType}/${recommendationsFor}/recommendations?language=en-US`
       : genreId
-      ? `https://api.themoviedb.org/3/discover/movie?with_genres=${genreId}&language=en-US`
-      : `https://api.themoviedb.org/3/movie/${category || "now_playing"}`;
+      ? `https://api.themoviedb.org/3/discover/${mediaType}?with_genres=${genreId}&language=en-US`
+      : `https://api.themoviedb.org/3/${mediaType}/${category || "popular"}?language=en-US`;
 
     fetch(url, TMDB_OPTIONS)
       .then(res => res.json())
-      .then(res => setApiData(res.results || []))
+      // List/discover results don't come back with media_type - tag them
+      // ourselves so cards, My List, and ratings all know what they're
+      // looking at without guessing later.
+      .then(res => setApiData((res.results || []).map((item) => ({ ...item, media_type: mediaType }))))
       .catch(err => {
         console.error(err);
         setApiData([]);
       })
       .finally(() => setLoading(false));
-  }, [category, genreId, recommendationsFor, staticItems]);
+  }, [category, genreId, recommendationsFor, mediaType, staticItems]);
 
   const toggleMyList = (e, movie, currentlyIn) => {
     e.preventDefault();
@@ -100,12 +105,13 @@ const TitleCard = ({ title, category, genreId, recommendationsFor, staticItems, 
             ))}
 
           {!loading && Array.isArray(apiData) && apiData.map((card) => {
+            const cardType = card.media_type || mediaType;
             return (
-              <Link to={`/player/${card.id}`} className='card' key={card.id}>
+              <Link to={`/player/${cardType}/${card.id}`} className='card' key={`${cardType}-${card.id}`}>
                 {card.backdrop_path ? (
                   <img
                     src={`https://image.tmdb.org/t/p/w500${card.backdrop_path}`}
-                    alt={card.original_title}
+                    alt={getMediaTitle(card)}
                     loading="lazy"
                   />
                 ) : (
@@ -115,6 +121,8 @@ const TitleCard = ({ title, category, genreId, recommendationsFor, staticItems, 
                 {card.vote_average > 0 && (
                   <span className="card-rating">★ {card.vote_average.toFixed(1)}</span>
                 )}
+
+                {cardType === "tv" && <span className="card-type-badge">TV</span>}
 
                 {user && (
                   <button
@@ -128,7 +136,7 @@ const TitleCard = ({ title, category, genreId, recommendationsFor, staticItems, 
 
                 <div className='card-info'>
                   <p className='card-lang'>{card.original_language?.toUpperCase()}</p>
-                  <p className='card-title'>{card.original_title || card.title}</p>
+                  <p className='card-title'>{getMediaTitle(card)}</p>
                 </div>
               </Link>
             );
